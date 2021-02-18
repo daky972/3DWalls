@@ -1,0 +1,156 @@
+<html>
+
+    <body style="background-color: rgb(255, 255, 255);height: /*100vw; */ width: 100%;perspective: 600px; margin: 0;">
+
+        <div id="camera" style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        /* perspective: 400px; */
+        transform: rotateX(-19deg) rotateY(-47deg) rotateZ(0deg) translateX(-4pc) translateY(-5pc) translateZ(-2pc);
+        transform-style: preserve-3d;
+    ">
+        </div>
+
+        <div id="environment">
+
+        </div>
+
+
+
+        <div style="position: absolute; right: 0; top: 0; width: 300px; height: 100px; background: gray;">
+
+            Width: <input type="number" id="width">
+            <br>
+            Height: <input type="number" id="height">
+            <br>
+            Deep: <input type="number" id="deep" value="10">
+            <br>
+            <input id="enter" type="button" value="Enter">
+        </div>
+
+    </body>
+
+
+    <script>
+
+        var wallIndex = 0
+        enviroment = document.getElementById('camera')
+
+        elWidth = document.getElementById('width')
+        elHeight = document.getElementById('height')
+        elDeep = document.getElementById('deep')
+        enter = document.getElementById('enter').addEventListener('click', function(event) {
+
+            enviroment.insertAdjacentHTML('beforeend', getWall(Number(elWidth.value), Number(elHeight.value), Number(elDeep.value)))
+        });
+
+
+
+        function getWall(width, height, deep) {
+
+            wallsHTML = ''
+            wallsHTML += _getWall(deep, height, `transform: rotateY(90deg) translateX(-${deep/2}px) translateZ(-${deep/2}px)`)
+            wallsHTML += _getWall(deep, height, `transform: rotateZ(90deg) rotateY(90deg) rotateX(90deg) translateX(-${deep/2}px) translateZ(${width-(deep/2)}px)`)
+            wallsHTML += _getWall(width, deep, `transform: rotateX(90deg) translateY(${deep/2}px) translateZ(${deep/2}px);`)
+            wallsHTML += _getWall(width, deep, `transform: rotateX(90deg) translateY(${deep/2}px) translateZ(-${height - (deep/2)}px)`)
+            wallsHTML += _getWall(width, height, `transform: translateZ(${deep}px)`)
+            wallsHTML += _getWall(width, height)
+
+            html = `<div id='wallId_${wallIndex++}' class='wall--container' style='position: absolute; transform-style: preserve-3d; cursor: grab;'>
+                        <div style='position: relative;'>
+                            ${wallsHTML}
+                        </div>
+                    </div>`
+            
+            return html
+        }
+
+        function _getWall(width, height, cssProperties) {
+            transform = cssProperties ? cssProperties : '';
+            transform += getRandomBackground();
+            return `<div style='width: ${width}px; height: ${height}px; position: absolute; ${transform}'></div>`
+        }
+
+        function getRandomBackground() {
+            r = Math.floor(Math.random(0, 256) * 256)
+            g = Math.floor(Math.random(0, 256) * 256)
+            b = Math.floor(Math.random(0, 256) * 256)
+
+            return `;background: rgb(${r}, ${g}, ${b});`
+        }
+
+
+
+
+
+
+
+        selectedElement = null
+
+
+        document.addEventListener('mousemove', moveWall)
+
+
+        inProgress = false
+        x = 0
+        y = 0
+        function moveWall(event) {
+
+            if (event.ctrlKey) {
+
+                if (!selectedElement) {
+                    x = event.clientX
+                    y = event.clientY
+                    element = event.target.closest('.wall--container')
+                    if (element) {
+                        selectedElement = element
+                        selectedElement.style.cursor = 'grabbing'
+                    }
+                }
+                
+                // console.log(event)
+            } else {
+                selectedElement.style.cursor = 'grab'
+                selectedElement = null
+                x = 0
+                y = 0
+            }
+
+            if (selectedElement) {
+                movementX = event.clientX - x
+                movementY = event.clientY - y
+
+                translates = getTranslate(selectedElement)
+                selectedElement.style.transform = `translateX(${translates.x + movementX}px) translateY(${translates.y + movementY}px) translateZ(0px)`
+            }
+            
+        }
+
+
+        
+        function getTranslate(element) {
+            translate = element.style.transform
+            xPos = translate.indexOf('translateX(') + 11;
+            translateX = translate.substring(translate.indexOf(')'), xPos + 1)
+            translateX = Number(translateX.replace(/\D/g,''))
+            
+            yPos = transform.indexOf('translateY(') + 11;
+            translateY = translate.substring(translate.indexOf(')'), yPos + 1)
+            translateY = Number(translateY.replace(/\D/g,''))
+
+            zPos = transform.indexOf('translateZ(') + 11;
+            translateZ = translate.substring(translate.indexOf(')'), zPos + 1)
+            translateZ = Number(translateZ.replace(/\D/g,''))
+
+            data = {
+                x: translateX,
+                y: translateY,
+                z: translateZ
+            }
+
+            return data
+        }
+
+    </script>
+</html>
